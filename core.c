@@ -10,8 +10,8 @@
 #define LST(i) (i < WIDTH)                                                   // Boundary handling
 #define WIDTH 8
 
-#define SCRH 24+3
-#define SCRW 48+1
+#define SCRH 28
+#define SCRW 90
 
 int Board[WIDTH][WIDTH];
 int FloodedHorizontally[WIDTH][WIDTH];
@@ -22,9 +22,9 @@ long long Score = 0;
 // BASIC FUNCTION
 
 void SetupWindow(){
-    system("mode 49,27");
-    COORD bufferSize = {SCRW, SCRH};
-    SMALL_RECT WinRect   = {0, 0, SCRW, SCRH};
+    system("mode 90,30");
+    COORD bufferSize = {SCRW, SCRH+2};
+    SMALL_RECT WinRect   = {0, 0, SCRW, SCRH+2};
     SMALL_RECT * WinSize = &WinRect;
 
     SetConsoleTitle("Gemambang");
@@ -49,11 +49,17 @@ void Delay(int ms){
     while(clock() < start + ms);
 }
 
+void SwapInt(int &a, int &b){
+    int t = b;
+    b = a;
+    a = t;
+}
+
 // INTERFACE
 
 void Box(SHORT x, SHORT y, SHORT id){
-    SHORT KoorX = (6*x) + 1;
-    SHORT KoorY = (3*y) + 1;
+    SHORT KoorX = (6*x) + 1 + 3;
+    SHORT KoorY = (3*y) + 1 + 1;
 
     SetColor(id);
     if(id < 0) SetColor(0);
@@ -62,8 +68,8 @@ void Box(SHORT x, SHORT y, SHORT id){
 }
 
 void SelectionBox(SHORT x, SHORT y){
-    SHORT KoorX = 6*x;    
-    SHORT KoorY = 3*y;
+    SHORT KoorX = 6*x + 3;    
+    SHORT KoorY = 3*y + 1;
 
     SetColor(9);
     GotoXY(KoorX, KoorY+0);                                              printf("%c%c%c%c%c%c%c\n",  201, 205, 205, 205, 205, 205, 187);
@@ -73,8 +79,8 @@ void SelectionBox(SHORT x, SHORT y){
 }
 
 void ClearSelectionBox(SHORT x, SHORT y){
-    SHORT KoorX = 6*x;    
-    SHORT KoorY = 3*y;
+    SHORT KoorX = 6*x + 3;    
+    SHORT KoorY = 3*y + 1;
 
     GotoXY(KoorX, KoorY+0);                                             printf("%c%c%c%c%c%c%c\n", 32, 32, 32, 32, 32, 32, 32);
     GotoXY(KoorX, KoorY+1); printf("%c", 32); GotoXY(KoorX+6, KoorY+1); printf(            "%c\n",                         32);
@@ -83,14 +89,106 @@ void ClearSelectionBox(SHORT x, SHORT y){
 }
 
 void SelectedSelectionBox(SHORT x, SHORT y){
-    SHORT KoorX = 6*x;    
-    SHORT KoorY = 3*y;  
+    SHORT KoorX = 6*x + 3;    
+    SHORT KoorY = 3*y + 1;  
 
     SetColor(15);
     GotoXY(KoorX, KoorY+0);                                              printf("%c%c%c%c%c%c%c\n",  218, 196, 196, 196, 196, 196, 191);
     GotoXY(KoorX, KoorY+1); printf("%c", 179); GotoXY(KoorX+6, KoorY+1); printf(            "%c\n",                                179);
     GotoXY(KoorX, KoorY+2); printf("%c", 179); GotoXY(KoorX+6, KoorY+2); printf(            "%c\n",                                179);
     GotoXY(KoorX, KoorY+3);                                              printf("%c%c%c%c%c%c%c\n",  192, 196, 196, 196, 196, 196, 217);
+}
+
+void OuterBorder(){
+    REP(i, WIDTH*6 + 5){
+        GotoXY(i+1, 0);
+        if(i == 0)          { printf("%c", 213); continue;}
+        if(i == WIDTH*6+4)  { printf("%c", 184); continue;}
+        printf("%c", 205);
+    }
+
+    REP(i, WIDTH*6 + 5){
+        GotoXY(i+1, WIDTH*3 + 2);
+        if(i == 0)          { printf("%c", 192); continue;}
+        if(i == WIDTH*6+4)  { printf("%c", 217); continue;}
+        printf("%c", 196);
+    }
+
+    REP(j, WIDTH*3 + 1){
+        GotoXY(1, j+1);
+        printf("%c", 179);
+
+        GotoXY(WIDTH*6 + 5, j+1);
+        printf("%c", 179);
+    }
+}
+
+void MainMenu(){
+    int OFFSET = WIDTH*6 + 5 + 2;
+
+    REP(i, 25){
+        GotoXY(i+OFFSET, 0);
+        if(i == 0)   { printf("%c", 213); continue;}
+        if(i == 24)  { printf("%c", 184); continue;}
+        printf("%c", 205);
+    }
+
+    REP(i, 25){
+        GotoXY(i+OFFSET, 11);
+        if(i == 0)   { printf("%c", 192); continue;}
+        if(i == 24)  { printf("%c", 217); continue;}
+        printf("%c", 196);
+    }
+
+    REP(j, 10){
+        GotoXY(OFFSET, j+1);
+        printf("%c", 179);
+
+        GotoXY(OFFSET+24, j+1);
+        printf("%c", 179);
+    }
+
+    GotoXY(OFFSET, 2); printf("%c   G E M A M B A N G   %c", 179, 179);
+    GotoXY(OFFSET, 4); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
+    
+    GotoXY(OFFSET, 6); printf("%c    NEW GAME           %c", 179, 179);
+    GotoXY(OFFSET, 7); printf("%c    CREDIT             %c", 179, 179);
+    GotoXY(OFFSET, 8); printf("%c    HELP               %c", 179, 179);
+    GotoXY(OFFSET, 9); printf("%c    EXIT               %c", 179, 179);
+}
+
+void HighScore(){
+    int OFFSET = WIDTH*6 + 5 + 2;
+
+    REP(i, 25){
+        GotoXY(i+OFFSET, 12);
+        if(i == 0)   { printf("%c", 213); continue;}
+        if(i == 24)  { printf("%c", 184); continue;}
+        printf("%c", 205);
+    }
+
+    REP(i, 25){
+        GotoXY(i+OFFSET, 26);
+        if(i == 0)   { printf("%c", 192); continue;}
+        if(i == 24)  { printf("%c", 217); continue;}
+        printf("%c", 196);
+    }
+
+    REP(j, 13){
+        GotoXY(OFFSET, j+13);
+        printf("%c", 179);
+
+        GotoXY(OFFSET+24, j+13);
+        printf("%c", 179);
+    }
+
+    GotoXY(OFFSET, 2+12); printf("%c   H I G H S C O R E   %c", 179, 179);
+    GotoXY(OFFSET, 4+12); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
+    
+    GotoXY(OFFSET, 6+12);  printf("%c  1. %d", 179, 352); GotoXY(OFFSET+24, 6+12);  printf("%c", 179);
+    GotoXY(OFFSET, 8+12);  printf("%c  2. %d", 179, 352); GotoXY(OFFSET+24, 8+12);  printf("%c", 179);
+    GotoXY(OFFSET, 10+12); printf("%c  3. %d", 179, 352); GotoXY(OFFSET+24, 10+12); printf("%c", 179);
+    GotoXY(OFFSET, 12+12); printf("%c  4. %d", 179, 352); GotoXY(OFFSET+24, 12+12); printf("%c", 179);
 }
 
 // RANDOM GENERATION
@@ -117,12 +215,6 @@ void GenerateBox(){
     REPP(x, y, WIDTH){
         Box(x, y, Board[x][y]);
     }
-}
-
-void SwapInt(int &a, int &b){
-    int t = b;
-    b = a;
-    a = t;
 }
 
 // FLOODING ALGORITHM
@@ -206,6 +298,8 @@ int ExhaustiveFlood(int flood, int fill, int boundary){
     return ret;
 }
 
+// ADDITIONAL FUNCIONALITY
+
 void SteppedFall(int ms){                                                                           // Unlike other functions, It can generate board
     int CenterHole = 1;
 
@@ -250,7 +344,7 @@ void FillItBlue(SHORT x, SHORT y){
     GenerateBox();
 }
 
-void KeepItClean(){
+void KeepItClean(SHORT ms){
     int check = 1;
 
     while(check != 0){
@@ -258,8 +352,8 @@ void KeepItClean(){
         REP(i, 5) check += ExhaustiveFlood(i+1, (i+1)*(-1), 3);
 
         GenerateBox();
-        SteppedFall(75);
-        FillEmptyBox(25);
+        SteppedFall(3*ms);
+        FillEmptyBox(ms);
 
         Score += check;
     }
@@ -270,6 +364,8 @@ void KeepItClean(){
     printf("SCORE L %lld\n", Score);
 }
 
+// MAIN FUNCTION
+
 void FloodAll(){
     int ret = 0;
 
@@ -279,7 +375,7 @@ void FloodAll(){
     SteppedFall(75);
     FillEmptyBox(25);
 
-    KeepItClean();
+    KeepItClean(25);
 
     Score += ret;
 
@@ -332,7 +428,7 @@ int PreSwap(SHORT x, SHORT y){
     ClearSelectionBox(x, y);
     SelectionBox(SwappedCursorX, SwappedCursorY);
 
-    FloodAll();;
+    FloodAll();
 
     return Ret;
 }
@@ -351,17 +447,15 @@ void Movement(){
                 break;
             case 'g':                           // For Testing
                 GenerateRandomBoard();
+                KeepItClean(0);
+                Score = 0;
                 GenerateBox();
                 break;        
             case 'b':
                 FillItBlue(SelectionCursorX, SelectionCursorY);
                 break;
             case 'q':
-                ExhaustiveFlood(1, -1, 3);
-                ExhaustiveFlood(2, -2, 3);
-                ExhaustiveFlood(3, -3, 3);
-                ExhaustiveFlood(4, -4, 3);
-                ExhaustiveFlood(5, -5, 3);
+                REP(i, 5) ExhaustiveFlood(i+1, (i+1)*(-1), 3);
                 GenerateBox();
                 Delay(250);
                 SteppedFall(75);
@@ -439,6 +533,10 @@ int main(){
     SetupWindow();
 
     system("cls");
+
+    OuterBorder();
+    MainMenu();
+    HighScore();
 
     GenerateCleanBox();
     GenerateBox();
