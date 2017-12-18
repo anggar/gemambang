@@ -20,6 +20,10 @@ int FloodedHorizontally[WIDTH][WIDTH];
 int FloodedVertically[WIDTH][WIDTH];
 
 long long Score = 0;
+long long Point = 0;
+long long localHighscore  = 0;
+
+void GenerateBox(), GenerateCleanBox();
 
 // BASIC FUNCTION
 
@@ -126,6 +130,8 @@ void OuterBorder(){
 }
 
 void SidepanelOne(){
+    SetColor(7);
+
     REP(i, 25){
         GotoXY(i+OFFSET, 0);
         if(i == 0)   { printf("%c", 213); continue;}
@@ -147,12 +153,27 @@ void SidepanelOne(){
         GotoXY(OFFSET+24, j+1);
         printf("%c", 179);
     }
+
+    REP(i, 10) REP(j, 22){ GotoXY(OFFSET+j+1, i+1); printf(" ");}
+}
+
+void CurrentScore(){
+    SidepanelOne();
+
+    GotoXY(OFFSET, 1);   printf("%c             S C O R E %c", 179, 179);
+    GotoXY(OFFSET+2, 2); printf("%d", Score);
+    GotoXY(OFFSET, 3);   printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
+
+    GotoXY(OFFSET, 4);   printf("%c             P O I N T %c", 179, 179);
+    GotoXY(OFFSET+2, 5); printf("%d", Point);
+    GotoXY(OFFSET, 6);   printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
 }
 
 void MainMenu(){
     SidepanelOne();
 
     GotoXY(OFFSET, 2); printf("%c   G E M A M B A N G   %c", 179, 179);
+    GotoXY(OFFSET, 3); printf("%c                       %c", 179, 179);
     GotoXY(OFFSET, 4); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
     
     GotoXY(OFFSET, 6); printf("%c    NEW GAME           %c", 179, 179);
@@ -178,15 +199,23 @@ void MainMenu(){
                         break;
                 }
                 break;
-            default: return;
+            case 13:
+                if(textPos == 0){ Score=0; Point=0; GenerateCleanBox(); GenerateBox(); CurrentScore();}
+                if(textPos == 3) exit(0);
+                return;
+                break;
         }
 
         GotoXY(OFFSET+3, textPos+6);
-        printf("%c", 254);
+        printf("> ");
     }
 }
 
 void HighScore(){
+    // BOX DRAWING
+
+    SetColor(7);
+
     REP(i, 25){
         GotoXY(i+OFFSET, 12);
         if(i == 0)   { printf("%c", 213); continue;}
@@ -209,13 +238,57 @@ void HighScore(){
         printf("%c", 179);
     }
 
+    // DATA RETRIEVING AND WRITING
+
+    FILE * hsFile;
+    hsFile = fopen("HIGHSCORE.dat", "r");
+    long long scoreFile[4];
+    long long tempScore;
+    int counter = 0;
+
+    fscanf(hsFile, "%lld", &scoreFile[0]);
+    if(localHighscore > scoreFile[0]){
+        tempScore = scoreFile[0];
+        scoreFile[0] = localHighscore;
+        scoreFile[1] = tempScore;
+        fscanf(hsFile, "%lld", &scoreFile[2]);
+        fscanf(hsFile, "%lld", &scoreFile[3]);
+        goto justPrintTheScore;
+    }
+    fscanf(hsFile, "%lld", &scoreFile[1]);
+    if(localHighscore > scoreFile[1]){
+        tempScore = scoreFile[1];
+        scoreFile[1] = localHighscore;
+        scoreFile[2] = tempScore;
+        fscanf(hsFile, "%lld", &scoreFile[3]);
+        goto justPrintTheScore;
+    }
+    fscanf(hsFile, "%lld", &scoreFile[2]);
+    if(localHighscore > scoreFile[2]){
+        tempScore = scoreFile[2];
+        scoreFile[2] = localHighscore;
+        scoreFile[3] = tempScore;
+        goto justPrintTheScore;
+    }
+    fscanf(hsFile, "%lld", &scoreFile[3]);
+    if(localHighscore > scoreFile[3]){
+        scoreFile[3] = localHighscore;
+    }
+
+    fclose(hsFile);
+
+    justPrintTheScore:
+    hsFile = fopen("HIGHSCORE.dat", "w");
+    REP(i, 4) fprintf(hsFile, "%lld\n", scoreFile[i]);
+    fclose(hsFile);
+
     GotoXY(OFFSET, 2+12); printf("%c   H I G H S C O R E   %c", 179, 179);
     GotoXY(OFFSET, 4+12); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
     
-    GotoXY(OFFSET, 6+12);  printf("%c  1. %d", 179, 352); GotoXY(OFFSET+24, 6+12);  printf("%c", 179);
-    GotoXY(OFFSET, 8+12);  printf("%c  2. %d", 179, 352); GotoXY(OFFSET+24, 8+12);  printf("%c", 179);
-    GotoXY(OFFSET, 10+12); printf("%c  3. %d", 179, 352); GotoXY(OFFSET+24, 10+12); printf("%c", 179);
-    GotoXY(OFFSET, 12+12); printf("%c  4. %d", 179, 352); GotoXY(OFFSET+24, 12+12); printf("%c", 179);
+    GotoXY(OFFSET, 6+12);  printf("%c  1. %d", 179, scoreFile[0]); GotoXY(OFFSET+24, 6+12);  printf("%c", 179);
+    GotoXY(OFFSET, 8+12);  printf("%c  2. %d", 179, scoreFile[1]); GotoXY(OFFSET+24, 8+12);  printf("%c", 179);
+    GotoXY(OFFSET, 10+12); printf("%c  3. %d", 179, scoreFile[2]); GotoXY(OFFSET+24, 10+12); printf("%c", 179);
+    GotoXY(OFFSET, 12+12); printf("%c  4. %d", 179, scoreFile[3]); GotoXY(OFFSET+24, 12+12); printf("%c", 179);
 }
 
 // RANDOM GENERATION
@@ -382,21 +455,16 @@ void KeepItClean(SHORT ms){
         SteppedFall(3*ms);
         FillEmptyBox(ms);
 
-        Score += check;
+        Point += check;
     }
-
-    GotoXY(0, 25);
-    printf("                    \n");
-    GotoXY(0, 25);
-    printf("SCORE L %lld\n", Score);
 }
 
 // MAIN FUNCTION
 
 void FloodAll(){
-    int ret = 0;
+    Point = 0;
 
-    REP(i, 5) ret += ExhaustiveFlood(i+1, (i+1)*(-1), 3);
+    REP(i, 5) Point += ExhaustiveFlood(i+1, (i+1)*(-1), 3);
 
     GenerateBox();
     SteppedFall(75);
@@ -404,12 +472,9 @@ void FloodAll(){
 
     KeepItClean(25);
 
-    Score += ret;
+    Score += Point;
 
-    GotoXY(0, 24);
-    printf("                    \n");
-    GotoXY(0, 24);
-    printf("POINT : %lld\n", ret);
+    CurrentScore();
 }
 
 int PreSwap(SHORT x, SHORT y){
@@ -488,6 +553,11 @@ void Movement(){
                 SteppedFall(75);
                 FillEmptyBox(25);
                 break;
+            case 27:
+                localHighscore = Score;
+                HighScore();
+                MainMenu();
+                break;
             case 224:
                 switch(getch()){
                     case 75:
@@ -510,8 +580,8 @@ void Movement(){
                         if(SelectionCursorX == WIDTH-1) break;
                         SelectionCursorX++;
                         break;
+                }
                 break;
-            }
         }
 
         SelectionBox(SelectionCursorX, SelectionCursorY);
