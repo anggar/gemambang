@@ -10,6 +10,8 @@
 #define LST(i) (i < WIDTH)                                                   // Boundary handling
 #define WIDTH 8
 
+#define OFFSET (WIDTH*6 + 5 + 2)
+
 #define SCRH 28
 #define SCRW 90
 
@@ -123,9 +125,7 @@ void OuterBorder(){
     }
 }
 
-void MainMenu(){
-    int OFFSET = WIDTH*6 + 5 + 2;
-
+void SidepanelOne(){
     REP(i, 25){
         GotoXY(i+OFFSET, 0);
         if(i == 0)   { printf("%c", 213); continue;}
@@ -147,6 +147,10 @@ void MainMenu(){
         GotoXY(OFFSET+24, j+1);
         printf("%c", 179);
     }
+}
+
+void MainMenu(){
+    SidepanelOne();
 
     GotoXY(OFFSET, 2); printf("%c   G E M A M B A N G   %c", 179, 179);
     GotoXY(OFFSET, 4); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
@@ -155,11 +159,34 @@ void MainMenu(){
     GotoXY(OFFSET, 7); printf("%c    CREDIT             %c", 179, 179);
     GotoXY(OFFSET, 8); printf("%c    HELP               %c", 179, 179);
     GotoXY(OFFSET, 9); printf("%c    EXIT               %c", 179, 179);
+
+    SHORT textPos = 0;
+
+    while(1){
+        switch(getch()){
+            case 224:
+                switch(getch()){
+                    case 72:
+                        GotoXY(OFFSET+3, textPos+6);
+                        printf("%c", 32);
+                        if(textPos != 0) textPos--;
+                        break;
+                    case 80:
+                        GotoXY(OFFSET+3, textPos+6);
+                        printf("%c", 32);
+                        if(textPos != 3) textPos++;
+                        break;
+                }
+                break;
+            default: return;
+        }
+
+        GotoXY(OFFSET+3, textPos+6);
+        printf("%c", 254);
+    }
 }
 
 void HighScore(){
-    int OFFSET = WIDTH*6 + 5 + 2;
-
     REP(i, 25){
         GotoXY(i+OFFSET, 12);
         if(i == 0)   { printf("%c", 213); continue;}
