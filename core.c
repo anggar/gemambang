@@ -12,8 +12,8 @@
 
 #define OFFSET (WIDTH*6 + 5 + 2)
 
-#define SCRH 28
-#define SCRW 90
+#define SCRH 27
+#define SCRW 82
 
 int Board[WIDTH][WIDTH];
 int FloodedHorizontally[WIDTH][WIDTH];
@@ -23,14 +23,14 @@ long long Score = 0;
 long long Point = 0;
 long long localHighscore  = 0;
 
-void GenerateBox(), GenerateCleanBox();
+void GenerateBox(), GenerateCleanBox(), MainMenu();
 
 // BASIC FUNCTION
 
 void SetupWindow(){
-    system("mode 90,30");
-    COORD bufferSize = {SCRW, SCRH+2};
-    SMALL_RECT WinRect   = {0, 0, SCRW, SCRH+2};
+    system("mode 82,27");
+    COORD bufferSize = {SCRW, SCRH};
+    SMALL_RECT WinRect   = {0, 0, SCRW, SCRH};
     SMALL_RECT * WinSize = &WinRect;
 
     SetConsoleTitle("Gemambang");
@@ -157,60 +157,6 @@ void SidepanelOne(){
     REP(i, 10) REP(j, 22){ GotoXY(OFFSET+j+1, i+1); printf(" ");}
 }
 
-void CurrentScore(){
-    SidepanelOne();
-
-    GotoXY(OFFSET, 1);   printf("%c             S C O R E %c", 179, 179);
-    GotoXY(OFFSET+2, 2); printf("%d", Score);
-    GotoXY(OFFSET, 3);   printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
-
-    GotoXY(OFFSET, 4);   printf("%c             P O I N T %c", 179, 179);
-    GotoXY(OFFSET+2, 5); printf("%d", Point);
-    GotoXY(OFFSET, 6);   printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
-}
-
-void MainMenu(){
-    SidepanelOne();
-
-    GotoXY(OFFSET, 2); printf("%c   G E M A M B A N G   %c", 179, 179);
-    GotoXY(OFFSET, 3); printf("%c                       %c", 179, 179);
-    GotoXY(OFFSET, 4); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
-    
-    GotoXY(OFFSET, 6); printf("%c    NEW GAME           %c", 179, 179);
-    GotoXY(OFFSET, 7); printf("%c    CREDIT             %c", 179, 179);
-    GotoXY(OFFSET, 8); printf("%c    HELP               %c", 179, 179);
-    GotoXY(OFFSET, 9); printf("%c    EXIT               %c", 179, 179);
-
-    SHORT textPos = 0;
-
-    while(1){
-        switch(getch()){
-            case 224:
-                switch(getch()){
-                    case 72:
-                        GotoXY(OFFSET+3, textPos+6);
-                        printf("%c", 32);
-                        if(textPos != 0) textPos--;
-                        break;
-                    case 80:
-                        GotoXY(OFFSET+3, textPos+6);
-                        printf("%c", 32);
-                        if(textPos != 3) textPos++;
-                        break;
-                }
-                break;
-            case 13:
-                if(textPos == 0){ Score=0; Point=0; GenerateCleanBox(); GenerateBox(); CurrentScore();}
-                if(textPos == 3) exit(0);
-                return;
-                break;
-        }
-
-        GotoXY(OFFSET+3, textPos+6);
-        printf("> ");
-    }
-}
-
 void HighScore(){
     // BOX DRAWING
 
@@ -289,6 +235,97 @@ void HighScore(){
     GotoXY(OFFSET, 8+12);  printf("%c  2. %d", 179, scoreFile[1]); GotoXY(OFFSET+24, 8+12);  printf("%c", 179);
     GotoXY(OFFSET, 10+12); printf("%c  3. %d", 179, scoreFile[2]); GotoXY(OFFSET+24, 10+12); printf("%c", 179);
     GotoXY(OFFSET, 12+12); printf("%c  4. %d", 179, scoreFile[3]); GotoXY(OFFSET+24, 12+12); printf("%c", 179);
+}
+
+void Help(){
+    SidepanelOne();
+
+    GotoXY(OFFSET, 1);   printf("%c               H E L P %c", 179, 179);
+    GotoXY(OFFSET, 3);   printf("%c ACCOMPLISH THREE      %c", 179, 179);
+    GotoXY(OFFSET, 4);   printf("%c CONSECUTIVE GEMS      %c", 179, 179);
+    GotoXY(OFFSET, 5);   printf("%c BY SWAPPING THEM      %c", 179, 179);
+
+    GotoXY(OFFSET, 7);    printf("%c SCORE IS ALL GEMS     %c", 179, 179);
+    GotoXY(OFFSET, 8);    printf("%c YOU GOT DURING GAME   %c", 179, 179);
+    GotoXY(OFFSET, 9);    printf("%c POINT IS GEMS YOU GET %c", 179, 179);
+    GotoXY(OFFSET, 10);   printf("%c IN LAST SWAP SESSION   %c", 179, 179);
+
+    if(getch() == 27) MainMenu();
+    else Help();
+}
+
+void Credit(){
+    SidepanelOne();
+
+    GotoXY(OFFSET, 1);   printf("%c           C R E D I T %c", 179, 179);
+    GotoXY(OFFSET, 3);   printf("%c THIS GAME IS CREATED  %c", 179, 179);
+    GotoXY(OFFSET, 4);   printf("%c WITH LOVE BY          %c", 179, 179);
+    GotoXY(OFFSET, 5);   printf("%c ANGGAR WAHYU          %c", 179, 179);
+
+    GotoXY(OFFSET, 7);    printf("%c THIS GAME IS HOSTED   %c", 179, 179);
+    GotoXY(OFFSET, 8);    printf("%c IN intip.in/gemambang %c", 179, 179);
+    GotoXY(OFFSET, 9);    printf("%c FEEL FREE TO HACK IT  %c", 179, 179);
+
+    if(getch() == 27) MainMenu();
+    else Credit();
+}
+
+void CurrentScore(){
+    SidepanelOne();
+
+    GotoXY(OFFSET, 1);   printf("%c             S C O R E %c", 179, 179);
+    GotoXY(OFFSET+2, 2); printf("%d", Score);
+    GotoXY(OFFSET, 3);   printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
+
+    GotoXY(OFFSET, 4);   printf("%c             P O I N T %c", 179, 179);
+    GotoXY(OFFSET+2, 5); printf("%d", Point);
+    GotoXY(OFFSET, 6);   printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
+}
+
+void MainMenu(){
+    SidepanelOne();
+
+    HighScore();
+
+    GotoXY(OFFSET, 2); printf("%c   G E M A M B A N G   %c", 179, 179);
+    GotoXY(OFFSET, 3); printf("%c                       %c", 179, 179);
+    GotoXY(OFFSET, 4); printf("%c", 195); REP(i, 23) printf("%c", 196); printf("%c", 180);
+    
+    GotoXY(OFFSET, 6); printf("%c    NEW GAME           %c", 179, 179);
+    GotoXY(OFFSET, 7); printf("%c    CREDIT             %c", 179, 179);
+    GotoXY(OFFSET, 8); printf("%c    HELP               %c", 179, 179);
+    GotoXY(OFFSET, 9); printf("%c    EXIT               %c", 179, 179);
+
+    SHORT textPos = 0;
+
+    while(1){
+        switch(getch()){
+            case 224:
+                switch(getch()){
+                    case 72:
+                        GotoXY(OFFSET+3, textPos+6);
+                        printf("%c", 32);
+                        if(textPos != 0) textPos--;
+                        break;
+                    case 80:
+                        GotoXY(OFFSET+3, textPos+6);
+                        printf("%c", 32);
+                        if(textPos != 3) textPos++;
+                        break;
+                }
+                break;
+            case 13:
+                if(textPos == 0){ Score=0; Point=0; GenerateCleanBox(); GenerateBox(); CurrentScore();}
+                if(textPos == 1) Credit();
+                if(textPos == 2) Help();
+                if(textPos == 3) exit(0);
+                return;
+                break;
+        }
+
+        GotoXY(OFFSET+3, textPos+6);
+        printf("> ");
+    }
 }
 
 // RANDOM GENERATION
@@ -461,20 +498,22 @@ void KeepItClean(SHORT ms){
 
 // MAIN FUNCTION
 
-void FloodAll(){
+int FloodAll(){
     Point = 0;
 
     REP(i, 5) Point += ExhaustiveFlood(i+1, (i+1)*(-1), 3);
 
     GenerateBox();
     SteppedFall(75);
-    FillEmptyBox(25);
+    FillEmptyBox(30);
 
-    KeepItClean(25);
+    KeepItClean(30);
 
     Score += Point;
 
     CurrentScore();
+
+    return Point;
 }
 
 int PreSwap(SHORT x, SHORT y){
@@ -520,7 +559,17 @@ int PreSwap(SHORT x, SHORT y){
     ClearSelectionBox(x, y);
     SelectionBox(SwappedCursorX, SwappedCursorY);
 
-    FloodAll();
+    if(FloodAll() == 0){                                                                        // If swap creating no effect
+        SwapInt(Board[x][y], Board[SwappedCursorX][SwappedCursorY]);
+
+        Box(x, y, Board[x][y]);
+        Box(SwappedCursorX, SwappedCursorY, Board[SwappedCursorX][SwappedCursorY]);
+        
+        ClearSelectionBox(SwappedCursorX, SwappedCursorY);
+        SelectionBox(x, y);
+
+        return 0;
+    }
 
     return Ret;
 }
